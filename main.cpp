@@ -1,6 +1,14 @@
 #include <raylib.h>
 #include <iostream>
 
+Color Green = Color{38, 185, 150, 255};
+Color Dark_Green = Color{20, 160, 133, 255};
+Color Light_Green = Color{129, 204, 184, 255};
+Color Yellow = Color{243, 213, 91, 255};
+
+int player_score = 0;
+int ai_score = 0;
+
 class ball {
 public:
     float x, y;
@@ -8,7 +16,7 @@ public:
     int radius;
 
     void Draw() {
-        DrawCircle(x, y, radius, WHITE);
+        DrawCircle(x, y, radius, Yellow);
     }
 
     void Update() {
@@ -19,20 +27,43 @@ public:
             speed_y *= -1;
         }
 
-        if (x + radius >= GetScreenWidth() || x - radius <= 0) {
-            speed_x *= -1;
+        if (x + radius >= GetScreenWidth()) {
+            ai_score++;
+            reset();
         }
+        if (x - radius <= 0) {
+            player_score++;
+            reset();
+        }
+    }
+
+    void reset() {
+        x = GetScreenWidth() / 2;
+        y = GetScreenHeight() / 2;
+    
+        int speed_choices[2] = {-1, 1};
+        speed_x *= speed_choices[GetRandomValue(0, 1)];
+        speed_y *= speed_choices[GetRandomValue(0, 1)];
     }
 };
 
 class paddle {
+protected:
+    void LimitMovement() {
+        if (y <= 0) {
+            y = 0;
+        }
+        if (y + height >= GetScreenHeight()) {
+            y = GetScreenHeight() - height;
+        }
+    }
 public:
     float x, y;
     float width, height;
     int speed;
 
     void Draw() {
-        DrawRectangle(x, y, width, height, WHITE);
+        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, WHITE);
     }
 
     void Update() {
@@ -43,12 +74,7 @@ public:
             y += speed;
         }
 
-        if (y <= 0) {
-            y = 0;
-        }
-        if (y + height >= GetScreenHeight()) {
-            y = GetScreenHeight() - height;
-        }
+        LimitMovement();
     }
 }; 
 
@@ -56,12 +82,14 @@ class aiPaddle: public paddle {
 public:
     void Update(int ball_y) {
         if (y + height / 2 > ball_y) {
-            y = y - speed;
+            y -= speed;
         }
 
         if (y + height / 2 <= ball_y) {
-            y -= speed;
+            y += speed;
         }
+
+        LimitMovement();
     }
 };
 
@@ -99,13 +127,27 @@ int main() {
     while (!WindowShouldClose()) {
         BeginDrawing();
 
+        // Clear Background
+        ClearBackground(Dark_Green);
+
         // Update
         ball.Update();
         player.Update();
+        ai.Update(ball.y);
 
-        // Clear Background
-        ClearBackground(BLACK);
-        // draw middle line
+        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{player.x, player.y, player.width, player.height})) {
+            ball.speed_x *= -1;
+        }
+
+        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{ai.x, ai.y, ai.width, ai.height})) {
+            ball.speed_x *= -1;
+        }
+
+        // Decor, makes ai side darker
+        DrawRectangle(screen_width / 2, 0, screen_width / 2, screen_height, Green); 
+        // Decor, middle circle
+        DrawCircle(screen_width / 2, screen_height / 2, 150, Light_Green);
+        // Decor, middle line
         DrawLine(screen_width / 2, 0, screen_width / 2, screen_height, WHITE);
         // draw ball
         ball.Draw();
@@ -113,7 +155,11 @@ int main() {
         ai.Draw();
         // draw player 
         player.Draw();
-
+        // draw ai score
+        DrawText(TextFormat("%i", ai_score), screen_width / 4, 20, 80, WHITE);
+        // draw player score
+        DrawText(TextFormat("%i", player_score), 3 * screen_width / 4, 20, 80, WHITE);
+        
         EndDrawing();
     }
 
