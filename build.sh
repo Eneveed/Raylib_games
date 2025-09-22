@@ -18,8 +18,8 @@ if ! command -v emcc &>/dev/null; then
 fi
 
 # Build raylib if libraylib.a is missing
-if [ ! -f raylib/src/libraylib.a ]; then
-    echo "[ERROR] raylib/src/libraylib.a not found!"
+if [ ! -f raylib/src/libraylib.web.a ]; then
+    echo "[ERROR] raylib/src/libraylib.web.a not found!"
     echo "[INFO] Building raylib"
     cd raylib/src
     emmake make PLATFORM=PLATFORM_WEB -j$(nproc)

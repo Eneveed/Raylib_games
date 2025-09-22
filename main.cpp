@@ -60,37 +60,63 @@ protected:
             y = GetScreenHeight() - height;
         }
     }
-public:
-    float x, y;
-    float width, height;
-    int speed;
 
-    void Draw() {
-        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, WHITE);
-    }
-
-    void Update() {
+    void getInputRight() {
         if (IsKeyDown(KEY_UP)) {
             y -= speed;
         }
         if (IsKeyDown(KEY_DOWN)) {
             y += speed;
         }
+    }
 
+    void getInputLeft() {
+        if (IsKeyDown(KEY_W)) {
+            y -= speed;
+        }
+        if (IsKeyDown(KEY_S)) {
+            y += speed;
+        }
+    }
+public:
+    float x, y;
+    float width, height;
+    double speed;
+
+    void Draw() {
+        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, WHITE);
+    }
+
+    void Update() {
+        getInputRight();
         LimitMovement();
     }
 }; 
 
 class aiPaddle: public paddle {
 public:
+    bool mode = false;
+
     void Update(int ball_y) {
-        if (y + height / 2 > ball_y) {
-            y -= speed;
+        if (IsKeyDown(KEY_M)) {
+            mode = true;
+        }
+        if (IsKeyDown(KEY_N)) {
+            mode = false;
         }
 
-        if (y + height / 2 <= ball_y) {
-            y += speed;
+        if (mode) {
+            getInputLeft();
+        } else {
+            if (y + height / 2 > ball_y) {
+                y -= speed;
+            }
+
+            if (y + height / 2 <= ball_y) {
+                y += speed;
+            }
         }
+        
 
         LimitMovement();
     }
@@ -140,12 +166,14 @@ int main() {
 
         // player
         if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{player.x, player.y, player.width, player.height})) {
+            player.speed += 0.5;
             ball.speed_x *= -1;
             ball.speed_x--;
         }
 
         // ai
         if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{ai.x, ai.y, ai.width, ai.height})) {
+            ai.speed += 0.5;
             ball.speed_x *= -1;
             ball.speed_x++;
         }
