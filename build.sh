@@ -6,9 +6,9 @@ echo "=== Raylib Web Build ==="
 # Go to repository root
 cd "$(dirname "$0")"
 
-# Loads Emscripten env if not already loaded
+# Loads emscripten env if not already loaded
 if ! command -v emcc &>/dev/null; then
-    echo "[INFO] Loading Emscripten environment..."
+    echo "[INFO] Loading emscripten environment..."
     if [ -f "./emsdk/emsdk_env.sh" ]; then
         source ./emsdk/emsdk_env.sh
     else
