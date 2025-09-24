@@ -9,47 +9,6 @@ Color Yellow = Color{243, 213, 91, 255};
 int player_score = 0;
 int ai_score = 0;
 
-class ball {
-public:
-    float x, y;
-    int speed_x, speed_y;
-    int radius;
-
-    void Draw() {
-        DrawCircle(x, y, radius, Yellow);
-    }
-
-    void Update() {
-        x += speed_x;
-        y += speed_y;
-
-        if (y + radius >= GetScreenHeight() || y - radius <= 0) {
-            speed_y *= -1;
-        }
-
-        if (x + radius >= GetScreenWidth()) {
-            ai_score++;
-            reset();
-        }
-        if (x - radius <= 0) {
-            player_score++;
-            reset();
-        }
-    }
-
-    void reset() {
-        x = GetScreenWidth() / 2;
-        y = GetScreenHeight() / 2;
-
-        speed_x = 7;
-        speed_y = 7;
-    
-        int speed_choices[2] = {-1, 1};
-        speed_x *= speed_choices[GetRandomValue(0, 1)];
-        speed_y *= speed_choices[GetRandomValue(0, 1)];
-    }
-};
-
 class paddle {
 protected:
     void LimitMovement() {
@@ -91,6 +50,10 @@ public:
         getInputRight();
         LimitMovement();
     }
+
+    void Reset() {
+        speed = 6;
+    }
 }; 
 
 class aiPaddle: public paddle {
@@ -122,21 +85,57 @@ public:
     }
 };
 
+class ball {
+public:
+    float x, y;
+    int speed_x, speed_y;
+    int radius;
+
+    void Draw() {
+        DrawCircle(x, y, radius, Yellow);
+    }
+
+    void Update(paddle &player, aiPaddle &ai) {
+        x += speed_x;
+        y += speed_y;
+
+        if (y + radius >= GetScreenHeight() || y - radius <= 0) {
+            speed_y *= -1;
+        }
+
+        if (x + radius >= GetScreenWidth()) {
+            ai_score++;
+            reset(player, ai);
+        }
+        if (x - radius <= 0) {
+            player_score++;
+            reset(player, ai);
+        }
+    }
+
+    void reset(paddle &player, aiPaddle &ai) {
+        x = GetScreenWidth() / 2;
+        y = GetScreenHeight() / 2;
+
+        speed_x = 7;
+        speed_y = 7;
+
+        player.speed = 6;
+        ai.speed = 6;
+    
+        int speed_choices[2] = {-1, 1};
+        speed_x *= speed_choices[GetRandomValue(0, 1)];
+        speed_y *= speed_choices[GetRandomValue(0, 1)];
+    }
+};
+
 int main() {
     ball ball;
     paddle player;
     aiPaddle ai;
 
-    std::cout << "booting" << '\n';
-
     const int screen_width = 1280;
     const int screen_height = 800;
-
-    ball.radius = 20;
-    ball.x = screen_width / 2;
-    ball.y = screen_height / 2;
-    ball.speed_x = 7;
-    ball.speed_y = 7;
 
     player.width = 25;
     player.height = 120;
@@ -150,6 +149,12 @@ int main() {
     ai.y = screen_height / 2 - ai.height / 2;
     ai.speed = 6;
 
+    ball.radius = 20;
+    ball.x = screen_width / 2;
+    ball.y = screen_height / 2;
+    ball.speed_x = 7;
+    ball.speed_y = 7;
+
     InitWindow(screen_width, screen_height, "raypong"); // initializes window
     SetTargetFPS(60); // sets game speed and fps
 
@@ -160,7 +165,7 @@ int main() {
         ClearBackground(Dark_Green);
 
         // Update
-        ball.Update();
+        ball.Update(player, ai);
         player.Update();
         ai.Update(ball.y);
 
