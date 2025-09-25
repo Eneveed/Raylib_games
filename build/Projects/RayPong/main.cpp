@@ -147,7 +147,7 @@ int main() {
     ai.height = 120;
     ai.x = 10;
     ai.y = screen_height / 2 - ai.height / 2;
-    ai.speed = 6;
+    ai.speed = 4;
 
     ball.radius = 20;
     ball.x = screen_width / 2;
