@@ -8,6 +8,7 @@ cd "$(dirname "$0")"
 
 # Loads emscripten env if not already loaded
 if ! command -v emcc &>/dev/null; then
+    echo "[ERROR] Emscripten enviroment not found!"
     echo "[INFO] Loading emscripten environment..."
     if [ -f "./emsdk/emsdk_env.sh" ]; then
         source ./emsdk/emsdk_env.sh
